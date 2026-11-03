@@ -1,94 +1,82 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <conio2.h>
-#include <ctype.h>
 #include <string.h>
+#include <conio2.h>
 #include <windows.h>
+#include <stdlib.h>
+
+#define TF 20
 
 struct TpProduto
-{	//32B
+{
 	int CodProd, Estoque;
 	char Descr[20];
 	float Preco;
 };
 
-void VerifArquivo(char NomeArq[80])
+int SeqIndex(struct TpProduto Produto[TF], int TL, int cod)
 {
-	FILE * PtrArq = fopen(NomeArq,"rb");
-	if (PtrArq == NULL) // Não encontrou o arquivo
+	int i = 0;
+	
+	while(i < TF && cod > Produto[i].CodProd)
+		i++;
+	
+	if(i<TF && cod == Produto[i].CodProd)
+		return -1;
+	else
+		return 1;
+}
+
+void IncercaoD(struct TpProduto V[TF], int TL)
+{
+	int p = TL-1,i;
+	struct TpProduto aux;
+	while(p > 0 && V[p].CodProd < V[p-1].CodProd)
 	{
-		printf("\nErro de Abertura!");
-		printf("\nDeseja cria-lo (s/n) ?: ");
-		if (toupper(getche()) == 'S')
+		aux = V[p];
+		V[p] = V[p-1];
+		V[p-1] = aux;
+		p--;
+	}
+	for(i =0; i < TL ;i++){
+		printf("\n Codigo: %d, Descricao: %s, Preco: %f, Estoque: %d",V[i].CodProd, V[i].Descr, V[i].Preco, V[i].Estoque);
+	}
+}
+
+void CadastroProd(struct TpProduto Produtos[TF], int &TL)
+{
+	int i = 0, verificacao;
+	
+	printf("\nDigite o codigo do produto: ");
+	scanf("%d",& Produtos[TL].CodProd);
+	
+	while(TL<TF && Produtos[TL].CodProd > 0)
+	{
+		verificacao = SeqIndex(Produtos,TL,Produtos[TL].CodProd);
+		if(verificacao == 1)
 		{
-			PtrArq = fopen(NomeArq,"wb");
-			fclose(PtrArq);
-			printf("\nArquivo criado com sucesso!");
+			printf("\n Codigo existente!");
 		}
 		else
 		{
-			printf("\nO arquivo esta pronto para uso!");
-			fclose(PtrArq);
-		}
-		getch();
-	}
-}
-
-void CadProd(void)
-{
-	TpProduto RProd;
-	FILE * PtrProd = fopen("Produtos.dat","ab+"); // Como estamos ab+ como metodo de abrir o arquivo, não é necessario verificar se ele existe ou não
-	clrscr();
-	printf("\n*****Cadastro de Produtos****");
-	printf("\nDigite o Codigo do produto: ");
-	scanf("%d", &RProd.CodProd);
-	while(RProd.CodProd > 0)	
-	{
-		printf("\nDescricao: ")	;
-		fflush(stdin);
-		gets(RProd.Descr);
-		
-		printf("\nEstoque: ");
-		scanf("%d",&RProd.Estoque);
-		
-		printf("\nPreco: ");
-		scanf("%d",&RProd.Preco);
-		fwrite(&RProd,sizeof(TpProduto),1,PtrProd);
-		printf("\nCodigo: ");
-		scanf("%d", &RProd.CodProd);
-	}
-	fclose(PtrProd);
-}
-
-void RELProd(void)
-{
-	TpProduto RP;	
-	FILE * Ptr = fopen("Produtos.dat","rb");
-	clrscr();
-	printf("\n*** Relatorio de Produtos ***\n");
-	if (Ptr == NULL)
-		printf("\nArquivo nao encontrado!");
-	else
-	{
-		fread(&RP,sizeof(TpProduto),1,Ptr);
-		while(!feof(Ptr)) // feof(nome_buffer) é retorno de um acesso de um arquivo
-		{		
-			printf("d - %s - %d - %.2f\n",RP.CodProd,RP.Descr,RP.Estoque,RP.Preco);
-			fread(&RP,sizeof(TpProduto),1,Ptr);
+			printf("\nDescricao: ");
+			fflush(stdin);
+			gets(Produtos[TL].Descr);
+			printf("\nPreco: ");
+			scanf("%f",& Produtos[TL].Preco);
+			printf("\nEstoque: ");
+			scanf("%d", & Produtos[TL].Estoque);
+			TL++;
+			IncercaoD(Produtos,TL);
+			printf("\nCodigo: ");
+			scanf("%d",& Produtos[TL].CodProd);
 		}
 	}
-	getch();
-	fclose(Ptr);
 }
 
-
-int main(void){
-	char Arquivo[80];
-	/*printf("\nDigite o caminho/Arquivo: ");
-	fflush(stdin);
-	gets(Arquivo);
-	VerifArquivo(Arquivo);*/
-	//CadProd();
-	RELProd();
+int main()
+{
+	int TL = 0;
+	struct TpProduto Produtos[TF];
+	CadastroProd(Produtos,TL);
 	return 0;
 }
